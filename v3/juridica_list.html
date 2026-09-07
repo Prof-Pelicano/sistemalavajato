@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Empresas (Pessoa Jurídica)</h2>
+    
+    {% if perms.lavajato.add_pessoajuridica %}
+        <a href="{% url 'pessoajuridica_create' %}" class="btn btn-primary">
+            + Nova Empresa
+        </a>
+    {% endif %}
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <form method="GET" class="d-flex">
+            <input type="text" name="pesquisaURL" class="form-control me-2" 
+                   placeholder="Buscar por nome ou CNPJ..." 
+                   value="{{ request.GET.pesquisaURL }}">
+            <button type="submit" class="btn btn-outline-secondary">Pesquisar</button>
+            
+            {% if request.GET.pesquisaURL %}
+                <a href="{% url 'pessoajuridica_list' %}" class="btn btn-link text-decoration-none">Limpar</a>
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th class="ps-3">Nome Fantasia / Razão</th>
+                    <th>CNPJ</th>
+                    <th>Contato</th>
+                    <th>Celular</th>
+                    <th class="text-end pe-3">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for empresa in object_list %}
+                <tr>
+                    <td class="ps-3">{{ empresa.nome }}</td>
+                    <td>{{ empresa.cnpj }}</td>
+                    <td>{{ empresa.contato_nome|default:"-" }}</td>
+                    <td>{{ empresa.celular }}</td>
+                    <td class="text-end pe-3">
+                        {% if perms.lavajato.change_pessoajuridica %}
+                            <a href="{% url 'pessoajuridica_update' empresa.pk %}" class="btn btn-sm btn-outline-warning">Editar</a>
+                        {% endif %}
+                        
+                        {% if perms.lavajato.delete_pessoajuridica %}
+                            <a href="{% url 'pessoajuridica_delete' empresa.pk %}" class="btn btn-sm btn-outline-danger">Excluir</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center text-muted py-4">
+                        {% if request.GET.pesquisaURL %}
+                            Nenhuma empresa encontrada com o termo "<strong>{{ request.GET.pesquisaURL }}</strong>".
+                        {% else %}
+                            Nenhuma empresa cadastrada no sistema.
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

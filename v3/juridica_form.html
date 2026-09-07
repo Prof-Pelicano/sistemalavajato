@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>{% if object %}Editar{% else %}Nova{% endif %} Empresa (Pessoa Jurídica)</h2>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    {{ form.as_p }}
+                    
+                    <div class="mt-4 d-flex justify-content-end">
+                        <a href="{% url 'pessoajuridica_list' %}" class="btn btn-secondary me-2" tabindex="-1">Cancelar</a>
+                        <button type="submit" class="btn btn-success" id="btn-salvar">Salvar Cadastro</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // solution suggested by Gemini
+    const campoCredito = document.getElementById('id_credito');
+    
+    if (campoCredito) {
+        campoCredito.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault(); 
+                document.getElementById('btn-salvar').click(); 
+            }
+        });
+    }
+</script> 
+{% endblock %}
