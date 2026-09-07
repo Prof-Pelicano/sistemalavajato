@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Veículos Cadastrados</h2>
+    
+    {% if perms.lavajato.add_veiculo %}
+        <a href="{% url 'veiculo_create' %}" class="btn btn-primary">
+            + Novo Veículo
+        </a>
+    {% endif %}
+</div>
+
+<!-- Bloco de Pesquisa -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <form method="GET" class="d-flex">
+            <input type="text" name="pesquisaURL" class="form-control me-2" 
+                   placeholder="Buscar por placa ou modelo..." 
+                   value="{{ request.GET.pesquisaURL }}">
+            <button type="submit" class="btn btn-outline-secondary">Pesquisar</button>
+            
+            {% if request.GET.pesquisaURL %}
+                <a href="{% url 'veiculo_list' %}" class="btn btn-link text-decoration-none">Limpar</a>
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+<!-- Tabela de Listagem -->
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th class="ps-3">Placa</th>
+                    <th>Modelo</th>
+                    <th>Cor</th>
+                    <th>Cliente (Proprietário)</th>
+                    <th class="text-end pe-3">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for veiculo in object_list %}
+                <tr>                  
+                    <td class="ps-3 fw-bold">{{ veiculo.placa }}</td>
+                    <td>{{ veiculo.modelo }} ({{ veiculo.tipo }})</td>
+                    <td>{{ veiculo.cor|default:"-" }}</td>                    
+                    <td>{{ veiculo.pessoa.nome }}</td>
+                    
+                    <td class="text-end pe-3">
+                        {% if perms.lavajato.change_veiculo %}
+                            <a href="{% url 'veiculo_update' veiculo.pk %}" class="btn btn-sm btn-outline-warning">Editar</a>
+                        {% endif %}
+                        
+                        {% if perms.lavajato.delete_veiculo %}
+                            <a href="{% url 'veiculo_delete' veiculo.pk %}" class="btn btn-sm btn-outline-danger">Excluir</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center text-muted py-4">
+                        {% if request.GET.pesquisaURL %}
+                            Nenhum veículo encontrado com o termo "<strong>{{ request.GET.pesquisaURL }}</strong>".
+                        {% else %}
+                            Nenhum veículo cadastrado no sistema.
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
