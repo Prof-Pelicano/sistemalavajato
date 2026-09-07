@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Clientes (Pessoa Física)</h2>
+    
+    {% if perms.lavajato.add_pessoafisica %}
+        <a href="{% url 'pessoafisica_create' %}" class="btn btn-primary">
+            + Novo Cliente
+        </a>
+    {% endif %}
+</div>
+
+<!-- Bloco de Pesquisa -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <form method="GET" class="d-flex">
+            <!-- A pesquisa buscará por Nome ou CPF, graças ao objeto Q na View -->
+            <input type="text" name="pesquisaURL" class="form-control me-2" 
+                   placeholder="Buscar por nome ou CPF..." 
+                   value="{{ request.GET.pesquisaURL }}">
+            <button type="submit" class="btn btn-outline-secondary">Pesquisar</button>
+            
+            {% if request.GET.pesquisaURL %}
+                <a href="{% url 'pessoafisica_list' %}" class="btn btn-link text-decoration-none">Limpar</a>
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+<!-- Tabela de Listagem -->
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th class="ps-3">Nome</th>
+                    <th>CPF</th>
+                    <th>Celular</th>
+                    <th>Crédito</th>
+                    <th class="text-end pe-3">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cliente in object_list %}
+                <tr>
+                    <td class="ps-3">{{ cliente.nome }}</td>
+                    <td>{{ cliente.cpf }}</td>
+                    <td>{{ cliente.celular }}</td>
+                    <td>
+                        {% if cliente.credito %}
+                            R$ {{ cliente.credito }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td class="text-end pe-3">
+                        {% if perms.lavajato.change_pessoafisica %}
+                            <a href="{% url 'pessoafisica_update' cliente.pk %}" class="btn btn-sm btn-outline-warning">Editar</a>
+                        {% endif %}
+                        
+                        {% if perms.lavajato.delete_pessoafisica %}
+                            <a href="{% url 'pessoafisica_delete' cliente.pk %}" class="btn btn-sm btn-outline-danger">Excluir</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center text-muted py-4">
+                        {% if request.GET.pesquisaURL %}
+                            Nenhum cliente encontrado com o termo "<strong>{{ request.GET.pesquisaURL }}</strong>".
+                        {% else %}
+                            Nenhum cliente cadastrado no sistema.
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
