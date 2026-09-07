@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card border-danger shadow-sm mt-4">
+            <div class="card-header bg-danger text-white">
+                <h4 class="mb-0">Confirmar Exclusão</h4>
+            </div>
+            <div class="card-body text-center py-4">
+                <h5 class="card-title">Atenção!</h5>
+                <p class="card-text">
+                    Tem certeza que deseja excluir o serviço <strong>"{{ object.descricao }}"</strong>? 
+                    Esta ação não poderá ser desfeita.
+                </p>
+                
+                <form method="post" class="mt-4">
+                    {% csrf_token %}
+                    <a href="{% url 'servico_list' %}" class="btn btn-secondary me-2">Cancelar</a>
+                    <button type="submit" class="btn btn-danger">Sim, Excluir</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
