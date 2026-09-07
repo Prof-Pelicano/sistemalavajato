@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm mt-4">
+            <div class="card-header bg-dark text-white">
+                <h4 class="mb-0">
+                    {% if object %}Editar Serviço{% else %}Novo Serviço{% endif %}
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="post">                    
+                    {% csrf_token %}                    
+                    
+                    {{ form.as_p }}
+                    
+                    <div class="d-flex justify-content-end mt-4">
+                        <a href="{% url 'servico_list' %}" class="btn btn-secondary me-2">Cancelar</a>
+                        <button type="submit" class="btn btn-success" id="btn-salvar">Salvar Serviço</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Seleciona o campo Fidelidade (o Django gera os IDs automaticamente com "id_nome_do_campo") 
+    const campoFidelidade = document.getElementById('id_fidelidade');    
+    // Fica "escutando" as teclas digitadas dentro deste campo
+    campoFidelidade.addEventListener('keydown', function(event) {
+        // Se a tecla for o Enter...
+        if (event.key === 'Enter') {
+            event.preventDefault(); // Bloqueia a ação padrão de abrir as opções
+            document.getElementById('btn-salvar').click(); // Clica no botão de salvar
+        }
+    }); // solution suggested by Gemini
+</script>
+
+{% endblock %}

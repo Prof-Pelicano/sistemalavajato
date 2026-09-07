@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Serviços Cadastrados</h2>
+    
+    {% if perms.lavajato.add_servico %}
+        <a href="{% url 'servico_create' %}" class="btn btn-primary">
+            + Novo Serviço
+        </a>
+    {% endif %}
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <form method="GET" class="d-flex">
+            {% csrf_token %}
+            <input type="text" name="pesquisaURL" class="form-control me-2" 
+                   placeholder="Buscar serviço por descrição..." 
+                   value="{{ request.GET.pesquisaURL }}">
+            <button type="submit" class="btn btn-outline-secondary">Pesquisar</button>
+
+            {% if request.GET.pesquisaURL %}
+                <a href="{% url 'servico_list' %}" class="btn btn-link text-decoration-none">Limpar</a>
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th class="ps-3">Descrição</th>
+                    <th>Valor</th>
+                    <th>Fidelidade</th>
+                    <th class="text-end pe-3">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for servico in object_list %}
+                <tr>
+                    <td class="ps-3">{{ servico.descricao }}</td>
+                    <td>R$ {{ servico.valor }}</td>
+                    <td>
+                        {% if servico.fidelidade == 'S' %}
+                            <span class="badge bg-success">Sim</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Não</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end pe-3">
+                        {% if perms.lavajato.change_servico %}
+                            <a href="{% url 'servico_update' servico.pk %}" class="btn btn-sm btn-outline-warning">Editar</a>
+                        {% endif %}
+                        
+                        {% if perms.lavajato.delete_servico %}
+                            <a href="{% url 'servico_delete' servico.pk %}" class="btn btn-sm btn-outline-danger">Excluir</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="text-center text-muted py-4">
+                        {% if request.GET.pesquisaURL %}
+                            Nenhum serviço encontrado com o termo "<strong>{{ request.GET.pesquisaURL }}</strong>".
+                        {% else %}
+                            Nenhum serviço cadastrado no sistema.
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
