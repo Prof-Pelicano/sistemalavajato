@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6">
+        <div class="card shadow-sm border-danger">
+            <div class="card-header bg-danger text-white">
+                <h4 class="mb-0">Estornar/Excluir Lavagem</h4>
+            </div>
+            <div class="card-body text-center">
+                <p class="lead mt-3">
+                    Você está prestes a excluir o registro financeiro da placa 
+                    <strong>{{ object.veiculo.placa }}</strong>
+                     no valor de R$ {{ object.valor }}.
+                </p>
+                
+                <form method="post" id="form-exclusao" class="mt-4 mb-2 text-start">
+                    {% csrf_token %}
+                    
+                    <div class="mb-4">
+                        <label for="senha_autorizacao" 
+                               class="form-label fw-bold
+                               text-danger">Senha de Gerente para Estorno:</label>
+                        <input type="password" id="senha_autorizacao" 
+                               class="form-control border-danger"
+                               placeholder="Digite a senha para autorizar exclusão">
+                    </div>
+
+                    <div class="d-flex justify-content-end">
+                        <a href="{% url 'movimento_list' %}" 
+                        class="btn btn-secondary me-2">Cancelar</a>
+                        <button type="submit" 
+                                class="btn btn-danger">Confirmar Exclusão</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const formExclusao = document.getElementById('form-exclusao');
+    const campoSenha = document.getElementById('senha_autorizacao');
+    const SENHA_MESTRE = "admin123";
+
+    formExclusao.addEventListener('submit', function(event) {
+        if (campoSenha.value !== SENHA_MESTRE) {
+            event.preventDefault(); 
+            alert("Acesso Negado: Senha de estorno incorreta.");
+            campoSenha.value = "";
+            campoSenha.focus();
+        }
+    });
+</script>
+{% endblock %}

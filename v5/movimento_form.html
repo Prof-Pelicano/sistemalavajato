@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>{% if object %}Editar Lavagem{% else %}Registrar Nova Lavagem{% endif %}</h2>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <form method="post" id="form-movimento">
+                    {% csrf_token %}
+                    
+                    {{ form.as_p }}                    
+
+                    {% if object %}
+                    <div class="alert alert-warning mt-4">
+                        <label for="senha_autorizacao" class="form-label fw-bold">Senha de Gerente para Alteração:</label>
+                        <input type="password" id="senha_autorizacao" class="form-control" placeholder="Digite a senha para autorizar">
+                        <small class="text-muted">Apenas usuários autorizados podem modificar dados financeiros.</small>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mt-4 d-flex justify-content-end">
+                        <a href="{% url 'movimento_list' %}" class="btn btn-secondary me-2" tabindex="-1">Cancelar</a>
+                        <button type="submit" class="btn btn-success" id="btn-salvar">Salvar Movimento</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const formMovimento = document.getElementById('form-movimento');
+    const campoSenha = document.getElementById('senha_autorizacao');   
+
+    const SENHA_MESTRE = "admin123"; 
+
+    formMovimento.addEventListener('submit', function(event) {        
+        if (campoSenha) {
+            if (campoSenha.value !== SENHA_MESTRE) {                
+                event.preventDefault(); 
+                alert("Acesso Negado: Senha de alteração incorreta.");
+                campoSenha.focus();
+            }
+        }
+    });
+</script>
+{% endblock %}
