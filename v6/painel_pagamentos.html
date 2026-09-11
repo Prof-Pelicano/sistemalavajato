@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <h2 class="mb-4">Caixa: Baixa de Pagamentos</h2>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <form method="GET" class="d-flex">
+                    <input type="text" name="cliente" class="form-control me-2" 
+                           placeholder="Digite o nome do cliente..." 
+                           value="{{ cliente_busca }}">
+                    <button type="submit" class="btn btn-primary">Buscar Pendências</button>
+                    
+                    {% if cliente_busca %}
+                        <a href="{% url 'painel_pagamentos' %}" class="btn btn-outline-secondary ms-2">Limpar</a>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+
+        <!-- Exibe as mensagens de sucesso (messages do Django) -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-success">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Bloco 2: Resultados e Confirmação -->
+        {% if movimentos %}
+            <div class="card shadow-sm border-success">
+                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Serviços Pendentes</h5>
+                    <h4 class="mb-0 fw-bold">Total a Pagar: R$ {{ total }}</h4>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-3">Data</th>
+                                <th>Veículo</th>
+                                <th>Serviço</th>
+                                <th>Valor</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for mov in movimentos %}
+                            <tr>
+                                <td class="ps-3">{{ mov.data|date:"d/m/Y" }}</td>
+                                <td class="fw-bold">{{ mov.veiculo.placa }}</td>
+                                <td>{{ mov.servico.descricao }}</td>
+                                <td>R$ {{ mov.valor }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="card-footer bg-white p-3 text-end">
+                    
+                    <!-- Formulário de Baixa -->
+                    <form method="POST" id="form-baixa">
+                        {% csrf_token %}
+                        <!-- Injeta os IDs de forma invisível para o backend saber o que atualizar -->
+                        {% for mov in movimentos %}
+                            <input type="hidden" name="movimentos_ids" value="{{ mov.id }}">
+                        {% endfor %}
+                        
+                        <div class="d-flex justify-content-end align-items-center mt-2">
+                            <div class="me-3 text-start">
+                                <label for="senha_gerente" class="form-label text-muted mb-0 small">Senha de Autorização:</label>
+                                <input type="password" id="senha_gerente" class="form-control form-control-sm border-warning" placeholder="Senha do Gerente" required>
+                            </div>
+                            <button type="submit" class="btn btn-success btn-lg mt-3">Confirmar Pagamento e Baixar</button>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        {% elif cliente_busca %}
+            <div class="alert alert-info text-center mt-4">
+                Nenhum serviço pendente de pagamento encontrado para o cliente <strong>{{ cliente_busca }}</strong>.
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    const formBaixa = document.getElementById('form-baixa');
+    const campoSenha = document.getElementById('senha_gerente');
+    const SENHA_MESTRE = "admin123";   // solução POG - programação orientada a gambiarra,
+                                      //  mas funciona para o propósito de teste. 
+
+    if (formBaixa) {
+        formBaixa.addEventListener('submit', function(event) {
+            if (campoSenha.value !== SENHA_MESTRE) {
+                event.preventDefault(); 
+                alert("Acesso Negado: Senha de gerente incorreta para realizar a baixa.");
+                campoSenha.value = "";
+                campoSenha.focus();
+            }
+        });
+    }
+</script>
+{% endblock %}
