@@ -1,1 +1,158 @@
+{% extends 'base.html' %}
 
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <h2 class="mb-4">Caixa: Baixa de Pagamentos</h2>
+
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <form method="GET" class="d-flex">
+                    <input type="text" name="pesquisaURL" class="form-control me-2" 
+                           placeholder="Digite o nome do cliente ou placa do veículo..." 
+                           value="{{ pesquisaURL|default:'' }}">
+                    <button type="submit" class="btn btn-primary">Buscar Pendências</button>
+                    
+                    {% if termo_busca %}
+                        <a href="{% url 'painel_pagamentos' %}" class="btn btn-outline-secondary ms-2">Limpar</a>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+  
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-success">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        {% if movimentos %}
+            <div class="card shadow-sm border-success">
+                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Serviços Pendentes</h5>
+                    
+                    <h4 class="mb-0 fw-bold">Total a Pagar: R$ <span id="total-pagar">0,00</span></h4>
+                </div>                
+                
+                <form method="POST" id="form-baixa">
+                    {% csrf_token %}
+                    
+                    <div class="card-body p-0">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-3">Data</th>
+                                    <th>Veículo</th>
+                                    <th>Serviço</th>
+                                    <th>Valor</th>
+                                    <th>
+                                        <div class="form-check m-0">
+                                            <input class="form-check-input border-secondary" type="checkbox" id="check-todos">
+                                            <label class="form-check-label fw-bold ms-1" for="check-todos">Pagar?</label>
+                                        </div>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for mov in movimentos %}
+                                <tr>
+                                    <td class="ps-3">{{ mov.data|date:"d/m/Y" }}</td>
+                                    <td class="fw-bold">{{ mov.veiculo.placa }}</td>
+                                    <td>{{ mov.servico.descricao }}</td>
+                                    
+                                    <td>R$ <span class="valor-item" data-valor="{{ mov.valor }}">{{ mov.valor }}</span></td>
+                                    <td>
+                                        <div class="form-check">                        
+                                            <input class="form-check-input check-pagamento"
+                                                   type="checkbox" name="movimentos_ids"
+                                                   value="{{ mov.id }}">
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="card-footer bg-white p-3 text-end">
+                        <div class="d-flex justify-content-end align-items-center mt-2">
+                            <div class="me-3 text-start">
+                                <label for="senha_gerente" class="form-label text-muted mb-0 small">Senha de Autorização:</label>
+                                <input type="password" 
+                                       id="senha_gerente" 
+                                       class="form-control form-control-sm border-warning"
+                                       placeholder="Senha do Gerente" required>
+                            </div>
+                            <button type="submit" class="btn btn-success btn-lg mt-3">Confirmar Pagamento e Baixar</button>
+                        </div>
+                    </div>
+                </form> 
+
+            </div>
+        {% elif cliente_busca %}
+            <div class="alert alert-info text-center mt-4">
+                Nenhum serviço pendente de pagamento encontrado para o cliente <strong>{{ cliente_busca }}</strong>.
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    const formBaixa = document.getElementById('form-baixa');
+    const campoSenha = document.getElementById('senha_gerente');
+    const displayTotal = document.getElementById('total-pagar');
+    const SENHA_MESTRE = "admin123";   // solução POG - programação orientada a gambiarra,
+                                      // mas funciona para o propósito de teste. 
+
+    if (formBaixa) {
+        formBaixa.addEventListener('submit', function(event) {
+
+            const checados = document.querySelectorAll('.check-pagamento:checked');
+            if (checados.length === 0) {
+                event.preventDefault();
+                alert("Selecione pelo menos um serviço para baixar.");
+                return;
+            }
+
+            if (campoSenha.value !== SENHA_MESTRE) {
+                event.preventDefault(); 
+                alert("Acesso Negado: Senha de gerente incorreta para realizar a baixa.");
+                campoSenha.value = "";
+                campoSenha.focus();
+            }
+        });
+    }
+
+    const checkboxes = document.querySelectorAll('.check-pagamento');
+
+    checkboxes.forEach(box => {
+        box.addEventListener('change', () => {
+            let soma = 0;
+            document.querySelectorAll('.check-pagamento:checked').forEach(checkedBox => {
+                let linha = checkedBox.closest('tr');
+                let valorTexto = linha.querySelector('.valor-item').getAttribute('data-valor');
+                soma += parseFloat(valorTexto.replace(',', '.')); 
+            });
+            
+            if(displayTotal) {
+                displayTotal.innerText = soma.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            }
+        });
+    });
+
+    const checkTodos = document.getElementById('check-todos');
+    
+    if (checkTodos) {
+        checkTodos.addEventListener('change', function() {
+            const statusMestre = this.checked;
+            
+            document.querySelectorAll('.check-pagamento').forEach(box => {
+                box.checked = statusMestre;
+                box.dispatchEvent(new Event('change'));
+            });
+        });
+    }
+    
+
+</script>
+{% endblock %}
